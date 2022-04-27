@@ -55,6 +55,7 @@ export interface OpItem {
   vault: OpVAult;
   additional_information: string;
   urls: OpUrl[];
+  fields: OpField[];
 }
 
 export interface OpVAult {

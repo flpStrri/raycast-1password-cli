@@ -116,7 +116,7 @@ function VaultItemList(props: { api: OnePassword }) {
   async function copyPassword(id: string) {
     const toast = await showToast(Toast.Style.Animated, "Copying password...");
     try {
-      const password = await opApi.getItemField("password", id, session.token);
+      const password = await opApi.getItemField("PASSWORD", id, session.token);
       if (!password) {
         toast.style = Toast.Style.Failure;
         toast.message = "No password found.";
@@ -133,7 +133,7 @@ function VaultItemList(props: { api: OnePassword }) {
   async function copyUsername(id: string) {
     const toast = await showToast(Toast.Style.Animated, "Copying username...");
     try {
-      const password = await opApi.getItemField("username", id, session.token);
+      const password = await opApi.getItemField("USERNAME", id, session.token);
       if (!password) {
         toast.style = Toast.Style.Failure;
         toast.message = "No username found.";

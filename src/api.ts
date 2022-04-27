@@ -2,7 +2,7 @@ import { execa } from "execa";
 import { existsSync } from "fs";
 import { dirname } from "path/posix";
 import { VaultState, OpAccount, OpItem, OpField, OpVAult } from "./types";
-import { filter, length, sort, pipe, map, prop, toLower, sortBy, compose } from "ramda";
+import { filter, length, sort, pipe, map, prop, head } from "ramda";
 
 export class OnePassword {
   private env: Record<string, string>;
@@ -64,14 +64,16 @@ export class OnePassword {
     return vaults.sort();
   }
 
-  async getItemField(fieldLabel: string, itemId: string, sessionToken?: string): Promise<string> {
+  async getItemField(fieldPurpose: "PASSWORD" | "USERNAME", itemId: string, sessionToken?: string): Promise<string | undefined> {
     const { stdout } = await execa(
       this.cliPath,
-      ["item", "get", itemId, "--fields", `label=${fieldLabel}`, "--cache", "--session", sessionToken || ""],
+      ["item", "get", itemId, "--cache", "--session", sessionToken || ""],
       { env: this.env }
     );
-    const field: OpField = JSON.parse(stdout);
-    return field?.value;
+    const item: OpItem = JSON.parse(stdout);
+    const filterFieldWithPurpose = (itemField: OpField) => itemField?.purpose === fieldPurpose
+    const maybeField: OpField | undefined = head(filter(filterFieldWithPurpose, item.fields))
+    return maybeField?.value;
   }
 
   async unlock(password: string): Promise<string> {
