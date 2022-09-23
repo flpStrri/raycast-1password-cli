@@ -211,7 +211,7 @@ function VaultItemList(props: { api: OnePassword }) {
         />
       ))}
       {state.isLoading ? (
-        <List.EmptyView icon={Icon.TwoArrowsClockwise} title="Loading..." description="Please wait." />
+        <List.EmptyView icon={Icon.ArrowClockwise} title="Loading..." description="Please wait." />
       ) : (
         <List.EmptyView
           icon={{ source: "op-128.png" }}
