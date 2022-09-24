@@ -100,9 +100,16 @@ function VaultItemList(props: { api: OnePassword, singleVault: string | undefine
   }
 
   async function loadVaults(sessionToken: string) {
+    let loadedVaults: string[] = []
     try {
-      // const loadedVaults = await opApi.listVaults(sessionToken);
-      const vaults = ["All", "Private", "Work", "Engineering", "Shared"]
+      if (vaultCache.has("vaults")) {
+        // @ts-ignore
+        loadedVaults = JSON.parse(vaultCache.get("vaults"));
+      } else {
+        loadedVaults = await opApi.listVaults(sessionToken);
+        vaultCache.set("vaults", JSON.stringify(loadedVaults));
+      }
+      const vaults = ["All"].concat(loadedVaults);
       setState((previous) => ({ ...previous, vaults }));
     } catch (error) {
       setState((previous) => ({ ...previous, isLocked: true }));
@@ -190,6 +197,7 @@ function VaultItemList(props: { api: OnePassword, singleVault: string | undefine
   async function lockVault() {
     const toast = await showToast({ title: "Locking Vault...", style: Toast.Style.Animated });
     vaultCache.remove("items")
+    vaultCache.remove("vaults")
     await session.deleteToken();
     await toast.hide();
   }
