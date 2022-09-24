@@ -8,6 +8,7 @@ import {
   Toast,
   Clipboard,
   LocalStorage,
+  Cache,
 } from "@raycast/api";
 import { OpItem } from "./types";
 import { useEffect, useState } from "react";
@@ -54,6 +55,7 @@ export default function Search() {
 function VaultItemList(props: { api: OnePassword, singleVault: string | undefined }) {
   const opApi = props.api;
   const session = useSession();
+  const vaultCache = new Cache();
   const [state, setState] = useState<{
     items: OpItem[];
     isLocked: boolean;
@@ -91,8 +93,8 @@ function VaultItemList(props: { api: OnePassword, singleVault: string | undefine
     if (!session.token) {
       return;
     }
-
     setState((previous) => ({ ...previous, isLoading: true, selectedVault: vaultName }));
+    vaultCache.remove("items")
     loadItems(session.token, vaultName);
   }
 
@@ -108,7 +110,14 @@ function VaultItemList(props: { api: OnePassword, singleVault: string | undefine
 
   async function loadItems(sessionToken: string, selectedVault: string) {
     try {
-      const items = await opApi.listItems(sessionToken, selectedVault);
+      let items: OpItem[] = []
+      if (vaultCache.has("items")) {
+        // @ts-ignore
+        items = JSON.parse(vaultCache.get("items"));
+      } else {
+        items = await opApi.listItems(sessionToken, selectedVault);
+        vaultCache.set("items", JSON.stringify(items));
+      }
       setState((previous) => ({ ...previous, isLoading: false, items }));
     } catch (error) {
       setState((previous) => ({ ...previous, isLocked: true }));
@@ -153,6 +162,7 @@ function VaultItemList(props: { api: OnePassword, singleVault: string | undefine
     if (session.token) {
       const toast = await showToast(Toast.Style.Animated, "Syncing Items...");
       try {
+        vaultCache.remove("items")
         await loadItems(session.token, state.selectedVault);
         await toast.hide();
       } catch (error) {
@@ -165,6 +175,7 @@ function VaultItemList(props: { api: OnePassword, singleVault: string | undefine
 
   async function lockVault() {
     const toast = await showToast({ title: "Locking Vault...", style: Toast.Style.Animated });
+    vaultCache.remove("items")
     await session.deleteToken();
     await toast.hide();
   }
