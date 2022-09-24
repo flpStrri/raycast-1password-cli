@@ -5,21 +5,31 @@ export function CredentialsActions(props: {
   id: string;
   copyPassword: (id: string) => void;
   copyUsername: (id: string) => void;
+  copyOTP: (id: string) => void;
 }) {
-  const { id, copyPassword, copyUsername } = props;
+  const { id, copyPassword, copyUsername, copyOTP } = props;
 
   const usernameAction = (
-    <Action title="Copy Username" key="copyUsername" icon={Icon.Person} onAction={async () => await copyUsername(id)} />
+    <Action title="Copy Username" key="copyUsername" icon={Icon.Person} onAction={() => copyUsername(id)} />
   );
   const passwordAction = (
     <Action
       title="Copy Password"
       key="copyPassword"
       icon={Icon.Clipboard}
-      onAction={async () => await copyPassword(id)}
+      onAction={() => copyPassword(id)}
     />
   );
-  return <Fragment>{[passwordAction, usernameAction]}</Fragment>;
+  const otpAction = (
+    <Action
+      title="Copy OTP"
+      key="copyOTP"
+      icon={Icon.Hourglass}
+      shortcut={{ modifiers: ["cmd"], key: "o" }}
+      onAction={() => copyOTP(id)}
+    />
+  );
+  return <Fragment>{[passwordAction, usernameAction, otpAction]}</Fragment>;
 }
 
 export function VaultActions(props: { syncItems: () => void; lockVault: () => void; logoutVault: () => void }) {

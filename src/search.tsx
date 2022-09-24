@@ -155,6 +155,24 @@ function VaultItemList(props: { api: OnePassword, singleVault: string | undefine
       }
       await Clipboard.copy(password);
       await toast.hide();
+      await closeMainWindow({ clearRootSearch: false });
+    } catch (error) {
+      setState((previous) => ({ ...previous, isLocked: true }));
+    }
+  }
+
+  async function copyOTP(id: string) {
+    const toast = await showToast(Toast.Style.Animated, "Copying OTP...");
+    try {
+      const otp = await opApi.getItemOtp(id, session.token);
+      console.log(" what we got", otp)
+      if (!otp) {
+        toast.style = Toast.Style.Failure;
+        toast.message = "No OTP found.";
+        return;
+      }
+      await Clipboard.copy(otp)
+      await toast.hide();
       await closeMainWindow({ clearRootSearch: true });
     } catch (error) {
       setState((previous) => ({ ...previous, isLocked: true }));
@@ -243,6 +261,7 @@ function VaultItemList(props: { api: OnePassword, singleVault: string | undefine
           syncItems={syncItems}
           copyPassword={copyPassword}
           copyUsername={copyUsername}
+          copyOTP={copyOTP}
         />
       ))}
       {state.isLoading ? (

@@ -48,8 +48,9 @@ export function VaultItem(props: {
   logoutVault: () => void;
   copyPassword: (id: string) => void;
   copyUsername: (id: string) => void;
+  copyOTP: (id: string) => void;
 }) {
-  const { item, syncItems, lockVault, logoutVault, copyPassword, copyUsername } = props;
+  const { item, syncItems, lockVault, logoutVault, copyPassword, copyUsername, copyOTP } = props;
   const { id, title, additional_information } = item;
 
   const keywords = useMemo(() => extractKeywords(item), [item]);
@@ -66,7 +67,7 @@ export function VaultItem(props: {
       actions={
         <ActionPanel>
           <ActionPanel.Section>
-            <CredentialsActions id={id} copyPassword={copyPassword} copyUsername={copyUsername} />
+            <CredentialsActions id={id} copyPassword={copyPassword} copyUsername={copyUsername} copyOTP={copyOTP} />
           </ActionPanel.Section>
           <ActionPanel.Section>
             <VaultActions syncItems={syncItems} lockVault={lockVault} logoutVault={logoutVault} />

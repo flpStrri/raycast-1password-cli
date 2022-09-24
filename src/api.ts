@@ -76,6 +76,24 @@ export class OnePassword {
     return maybeField?.value;
   }
 
+  async getItemOtp(itemId: string, sessionToken?: string): Promise<string | undefined> {
+    try{
+      const { stdout } = await execa(
+        this.cliPath,
+        ["--cache", "item", "get", itemId, "--field", "type=otp", "--session", sessionToken || ""],
+        { env: this.env }
+      );
+      const itemOtp = JSON.parse(stdout)
+      return itemOtp?.totp;
+    } catch (err) {
+      // @ts-ignore
+      if (err.stderr.includes("doesn't have any fields of the following types")) {
+        return undefined
+      }
+      throw err
+    }
+  }
+
   async unlock(password: string): Promise<string> {
     const { stdout: sessionToken } = await execa(this.cliPath, ["signin", "--raw", "--account", "raycast"], {
       env: this.env,
