@@ -43,6 +43,13 @@
       "description": "The secret key value seen in the signin page at 1Password web app."
     },
     {
+      "name": "singleVault",
+      "type": "textfield",
+      "required": false,
+      "title": "Single vault name",
+      "description": "The vault name filter for the credentials search."
+    },
+    {
       "name": "cliPath",
       "type": "textfield",
       "required": false,

@@ -42,16 +42,16 @@ function useSession() {
 }
 
 export default function Search() {
-  const { cliPath, emailAddress, secretKey, signInAddress } = getPreferenceValues();
+  const { cliPath, emailAddress, secretKey, signInAddress, singleVault } = getPreferenceValues();
   try {
     const api = new OnePassword(emailAddress, secretKey, cliPath, signInAddress);
-    return <VaultItemList api={api} />;
+    return <VaultItemList api={api} singleVault={singleVault} />;
   } catch (e) {
     return <TroubleshootingGuide />;
   }
 }
 
-function VaultItemList(props: { api: OnePassword }) {
+function VaultItemList(props: { api: OnePassword, singleVault: string | undefined }) {
   const opApi = props.api;
   const session = useSession();
   const [state, setState] = useState<{
@@ -64,8 +64,8 @@ function VaultItemList(props: { api: OnePassword }) {
     items: [],
     isLocked: false,
     isLoading: true,
-    vaults: ["All"],
-    selectedVault: "",
+    vaults: [props.singleVault || "All"],
+    selectedVault: props.singleVault || "",
   });
 
   useEffect(() => {
@@ -76,7 +76,9 @@ function VaultItemList(props: { api: OnePassword }) {
     if (!token) {
       setState((previous) => ({ ...previous, isLocked: true }));
     } else {
-      loadVaults(token);
+      if (!props.singleVault) {
+        loadVaults(token);
+      }
       loadItems(token, state.selectedVault);
     }
   }, [session.token, session.active]);
@@ -197,7 +199,7 @@ function VaultItemList(props: { api: OnePassword }) {
   return (
     <List
       isLoading={state.isLoading}
-      searchBarAccessory={<VaultDropdown vaults={state.vaults} onVaultChange={onVaultChange} />}
+      searchBarAccessory={props.singleVault ? undefined : <VaultDropdown vaults={state.vaults} onVaultChange={onVaultChange} />}
     >
       {state.items.map((item) => (
         <VaultItem
