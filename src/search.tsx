@@ -9,6 +9,7 @@ import {
   Clipboard,
   LocalStorage,
   Cache,
+  openCommandPreferences,
 } from "@raycast/api";
 import { OpItem } from "./types";
 import { useEffect, useState } from "react";
@@ -100,8 +101,8 @@ function VaultItemList(props: { api: OnePassword, singleVault: string | undefine
 
   async function loadVaults(sessionToken: string) {
     try {
-      const loadedVaults = await opApi.listVaults(sessionToken);
-      const vaults = ["All"].concat(loadedVaults);
+      // const loadedVaults = await opApi.listVaults(sessionToken);
+      const vaults = ["All", "Private", "Work", "Engineering", "Shared"]
       setState((previous) => ({ ...previous, vaults }));
     } catch (error) {
       setState((previous) => ({ ...previous, isLocked: true }));
@@ -120,6 +121,18 @@ function VaultItemList(props: { api: OnePassword, singleVault: string | undefine
       }
       setState((previous) => ({ ...previous, isLoading: false, items }));
     } catch (error) {
+      // @ts-ignore
+      const errorStderr: string = error.stderr
+      const toast = await showToast({
+        title: "Error loading vault items",
+        style: Toast.Style.Failure,
+        primaryAction: props.singleVault && errorStderr.includes("isn't a vault in this account") ? {
+          title: "Update single vault name",
+          onAction: (toast) => {
+            openCommandPreferences();
+          },
+        } : undefined,
+      });
       setState((previous) => ({ ...previous, isLocked: true }));
     }
   }
@@ -163,6 +176,7 @@ function VaultItemList(props: { api: OnePassword, singleVault: string | undefine
       const toast = await showToast(Toast.Style.Animated, "Syncing Items...");
       try {
         vaultCache.remove("items")
+        vaultCache.remove("vaults")
         await loadItems(session.token, state.selectedVault);
         await toast.hide();
       } catch (error) {
